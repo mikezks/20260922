@@ -43,15 +43,7 @@
       }
     </form>
 
-    <p>Status: {{ passengerResource.status() }}</p>
-
     <div class="form-group">
-      <a
-        [routerLink]="['..', this.id()-1]"
-        class="btn btn-default"
-      >
-        ID -1
-      </a>
       <button
         (click)="save()"
         [disabled]="!editForm.valid"
@@ -59,18 +51,6 @@
       >
         Save
       </button>
-      <button
-        (click)="passengerResource.reload()"
-        class="btn btn-default"
-      >
-        Reload
-      </button>
-      <a
-        [routerLink]="['..', this.id()+1]"
-        class="btn btn-default"
-      >
-        ID +1
-      </a>
     </div>
   </div>
 </div>

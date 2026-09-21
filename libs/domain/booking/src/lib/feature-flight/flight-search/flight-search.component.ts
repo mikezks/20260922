@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Flight } from '../../logic-flight/model/flight';
-import { injectTicketsFacade } from '../../logic-flight/state/facade';
+import { Flight } from '@flight-demo/domain/booking-api-boarding';
+import { FlightService } from '../../logic-flight/data-access/flight.service';
+import { FlightFilter } from '../../logic-flight/model/flight-filter';
 import { FlightCardComponent } from '../../ui-flight/flight-card/flight-card.component';
 import { FlightFilterComponent } from '../../ui-flight/flight-filter/flight-filter.component';
 
@@ -20,33 +21,35 @@ import { FlightFilterComponent } from '../../ui-flight/flight-filter/flight-filt
   templateUrl: './flight-search.component.html',
 })
 export class FlightSearchComponent {
-  private ticketsFacade = injectTicketsFacade();
+  private flightService = inject(FlightService);
+  private changeDetector = inject(ChangeDetectorRef);
 
-  protected filter = signal({
-    from: 'London',
+  protected filter = {
+    from: 'Paris',
     to: 'New York',
     urgent: false
-  });
+  };
   protected basket: Record<number, boolean> = {
     3: true,
     5: true
   };
-  protected flights$ = this.ticketsFacade.flights$;
+  protected flights: Flight[] = [];
 
-  constructor() {
-    effect(() => console.log(this.filter()));
-    effect(() => {
-      this.filter();
-      untracked(() => this.search());
-    });
-  }
+  protected search(filter: FlightFilter): void {
+    this.filter = filter;
 
-  protected search(): void {
-    if (!this.filter().from || !this.filter().to) {
+    if (!this.filter.from || !this.filter.to) {
       return;
     }
 
-    this.ticketsFacade.search(this.filter());
+    this.flightService.find(
+      this.filter.from, this.filter.to, this.filter.urgent
+    ).subscribe(
+      flights => {
+        this.flights = flights;
+        this.changeDetector.markForCheck();
+      }
+    );
   }
 
   protected delay(flight: Flight): void {
@@ -60,10 +63,12 @@ export class FlightSearchComponent {
       delayed: true
     };
 
-    this.ticketsFacade.update(newFlight);
+    this.flights = this.flights.map(
+      flight => flight.id === newFlight.id ? newFlight : flight
+    );
   }
 
   protected reset(): void {
-    this.ticketsFacade.reset();
+    this.flights = [];
   }
 }
