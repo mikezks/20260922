@@ -19,7 +19,7 @@ class AddressHost {
   readonly addressForm = form(this.address, addressSchema);
 }
 
-describe('AddressControl as a signal form value control', () => {
+describe('AddressControl as a shared address subform', () => {
   it('synchronizes child inputs with the parent address model', async () => {
     const fixture = TestBed.createComponent(AddressHost);
     await fixture.whenStable();

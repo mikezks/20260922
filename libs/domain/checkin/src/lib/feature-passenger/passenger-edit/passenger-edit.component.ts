@@ -1,9 +1,8 @@
+import { httpResource } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, effect, inject, input, numberAttribute } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { switchMap } from 'rxjs';
-import { PassengerService } from '../../logic-passenger/data-access/passenger.service';
-import { initialPassenger } from '../../logic-passenger/model/passenger';
+import { RouterLink } from '@angular/router';
+import { initialPassenger, Passenger } from '../../logic-passenger/model/passenger';
 import { validatePassengerStatus } from '../../util-validation/passenger-validator/passenger-status.validator';
 
 
@@ -12,12 +11,12 @@ import { validatePassengerStatus } from '../../util-validation/passenger-validat
   changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'app-passenger-edit',
   imports: [
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    RouterLink
   ],
   templateUrl: './passenger-edit.component.html'
 })
 export class PassengerEditComponent {
-  private passengerService = inject(PassengerService);
   protected editForm = inject(NonNullableFormBuilder).group({
     id: [0],
     firstName: [''],
@@ -28,20 +27,22 @@ export class PassengerEditComponent {
     ]]
   });
 
-  protected id = input(0, { transform: numberAttribute });
-  protected passenger = toSignal(
-    toObservable(this.id).pipe(
-      switchMap(id => this.passengerService.findById(id))
-    ), { initialValue: initialPassenger }
+  readonly id = input(0, { transform: numberAttribute });
+  protected readonly passengerResource = httpResource<Passenger>(
+    () => `https://demo.angulararchitects.io/api/passenger?id=${ this.id() }`,
+    { defaultValue: initialPassenger }
   );
 
   constructor() {
-    effect(
-      () => this.editForm.patchValue(this.passenger())
-    );
+    effect(() => {
+      if (this.passengerResource.hasValue()) {
+        this.editForm.patchValue(this.passengerResource.value());
+      }
+    });
   }
 
   protected save(): void {
-    console.log(this.editForm.value);
+    this.passengerResource.set(this.editForm.getRawValue());
+    console.log(this.passengerResource.value());
   }
 }
