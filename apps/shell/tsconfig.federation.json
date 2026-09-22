@@ -1,5 +1,15 @@
 {
   "extends": "./tsconfig.app.json",
-  "files": ["src/main.ts"],
-  "include": ["src/**/*.d.ts"]
+  "files": [
+    "../../libs/shared/state/src/index.ts",
+    "../../libs/shared/core/src/index.ts",
+    "../../libs/domain/booking/src/index.ts",
+    "../../libs/domain/checkin/src/index.ts",
+    "../../libs/domain/boarding/src/index.ts",
+    "../../libs/shared/navigation/src/index.ts",
+    "../../libs/domain/booking/src/lib/api-boarding/api.ts"
+  ],
+  "include": [
+    "src/**/*.d.ts"
+  ]
 }
