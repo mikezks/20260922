@@ -85,10 +85,7 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "apps/shell/**/*.ts",
-              "apps/shell/**/*.html"
-            ],
+            "lintFilePatterns": ["apps/shell/**/*.ts", "apps/shell/**/*.html"],
             "eslintConfig": "apps/shell/eslint.config.js"
           }
         }
@@ -247,6 +244,72 @@
           "options": {
             "tsConfig": "libs/shared/state/tsconfig.spec.json"
           }
+        }
+      }
+    },
+    "miles": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "apps/miles",
+      "sourceRoot": "apps/miles/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "apps/miles/src/main.ts",
+            "tsConfig": "apps/miles/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "apps/miles/public"
+              }
+            ],
+            "styles": ["apps/miles/src/styles.scss"]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "miles:build:production"
+            },
+            "development": {
+              "buildTarget": "miles:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test"
         }
       }
     }
