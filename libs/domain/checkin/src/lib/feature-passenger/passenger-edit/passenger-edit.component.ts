@@ -1,6 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, numberAttribute } from '@angular/core';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { validatePassengerStatus } from '../../util-validation/passenger-validator/passenger-status.validator';
+import { PassengerService } from '../../logic-passenger/data-access/passenger.service';
+import { switchMap } from 'rxjs';
+import { initialPassenger } from '../../logic-passenger/model/passenger';
+import { RouterLink } from '@angular/router';
 
 
 @Component({
@@ -8,11 +13,13 @@ import { validatePassengerStatus } from '../../util-validation/passenger-validat
   changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'app-passenger-edit',
   imports: [
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    RouterLink
   ],
   templateUrl: './passenger-edit.component.html'
 })
 export class PassengerEditComponent {
+  private readonly passengerService = inject(PassengerService);
   protected editForm = inject(NonNullableFormBuilder).group({
     id: [0],
     firstName: [''],
@@ -22,6 +29,20 @@ export class PassengerEditComponent {
       validatePassengerStatus(['A', 'B', 'C'])
     ]]
   });
+
+  readonly id = input(0, { transform: numberAttribute });
+  private readonly id$ = toObservable(this.id);
+  private readonly passenger$ = this.id$.pipe(
+    switchMap(id => this.passengerService.findById(id))
+  );
+  private readonly passenger = toSignal(this.passenger$, {
+    // requireSync: true
+    initialValue: initialPassenger
+  });
+
+  constructor() {
+    effect(() => this.editForm.patchValue(this.passenger()));
+  }
 
   protected save(): void {
     console.log(this.editForm.value);
