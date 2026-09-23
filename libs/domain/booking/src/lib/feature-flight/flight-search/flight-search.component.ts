@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Flight } from '../../logic-flight/model/flight';
 import { FlightFilter } from '../../logic-flight/model/flight-filter';
 import { injectTicketsFacade } from '../../logic-flight/state/facade';
 import { FlightCardComponent } from '../../ui-flight/flight-card/flight-card.component';
 import { FlightFilterComponent } from '../../ui-flight/flight-filter/flight-filter.component';
+// import { ReactiveNode, SIGNAL } from '@angular/core/primitives/signals';
 
 
 @Component({
@@ -38,7 +39,33 @@ export class FlightSearchComponent {
   protected flights = this.ticketsFacade.flights;
 
   constructor() {
-    effect(() => console.log(this.route()));
+    /* let activeConsumer: ReactiveNode | null = null;
+    
+    activeConsumer = effect(() => console.log(this.route()));
+ */
+    // Signal Update behavior
+    /* console.log(this.filter().from);
+    this.filter.update(curr => ({ ...curr, from: 'Porto' }));
+    console.log(this.filter().from);
+    this.filter.update(curr => ({ ...curr, from: 'Madrid' }));
+    console.log(this.filter().from);
+    this.filter.update(curr => ({ ...curr, from: 'Rome' }));
+    console.log(this.filter().from);
+    this.filter.update(curr => ({ ...curr, from: 'Athens' }));
+    console.log(this.filter().from);
+    this.filter.update(curr => ({ ...curr, from: 'Oslo' }));
+    console.log(this.filter().from); */
+
+    // Glitch-free behavior
+    /* const counter = signal(0);
+    const isEven = computed(() => counter() % 2 === 0);
+    effect(() => console.log({
+      counter: untracked(() => counter()),
+      isEven: isEven()
+    }));
+    setInterval(() => counter.update(curr => curr+1), 2_000); */
+
+    // console.log(this.route[SIGNAL]);
   }
 
   protected search(filter: FlightFilter): void {
