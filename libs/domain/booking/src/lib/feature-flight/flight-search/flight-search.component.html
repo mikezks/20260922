@@ -5,16 +5,16 @@
 
   <div class="card-body">
     <app-flight-filter
-      [filter]="filter()"
-      (searchTrigger)="search($event)"
+      [filter]="store.filter()"
+      (searchTrigger)="store.setFilter($event)"
     >
-      @if (flights().length) {
+      @if (store.flights().length) {
         <div class="flight-filter-info">
-          {{ flights().length }} flights found!
+          {{ store.flights().length }} flights found!
         </div>
       }
-      @if (flights().length) {
-        <button (click)="reset()"
+      @if (store.flights().length) {
+        <button (click)="store.resetFlights()"
           class="btn btn-default flight-filter-button"
         >Reset</button>
       }
@@ -23,11 +23,11 @@
 </div>
 
 <div class="row">
-  @for (flight of flights(); track flight) {
+  @for (flight of store.flights(); track flight) {
     <div class="col-xs-12 col-sm-6 col-md-4">
       <app-flight-card
         [item]="flight"
-        [selected]="basket()[flight.id]"
+        [selected]="store.basket()[flight.id]"
         (delayTrigger)="delay($event)"
       />
     </div>
@@ -39,6 +39,6 @@
     <h2 class="card-title">Basket</h2>
   </div>
   <div class="card-body">
-    <pre>{{ basket() | json }}</pre>
+    <pre>{{ store.basket() | json }}</pre>
   </div>
 </div>

@@ -1,12 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Flight } from '@flight-demo/domain/booking-api-boarding';
-import { FlightService } from '../../logic-flight/data-access/flight.service';
-import { FlightFilter } from '../../logic-flight/model/flight-filter';
+import { BookingStore } from '../../logic-flight/state/booking.store';
 import { FlightCardComponent } from '../../ui-flight/flight-card/flight-card.component';
 import { FlightFilterComponent } from '../../ui-flight/flight-filter/flight-filter.component';
-import { BookingStore } from '../../logic-flight/state/booking.store';
 
 
 @Component({
@@ -22,18 +20,7 @@ import { BookingStore } from '../../logic-flight/state/booking.store';
   templateUrl: './flight-search.component.html',
 })
 export class FlightSearchComponent {
-  private flightService = inject(FlightService);
-  private store = inject(BookingStore);
-  private changeDetector = inject(ChangeDetectorRef);
-
-  protected filter = this.store.filter;
-  protected basket = this.store.basket;
-  protected flights = this.store.flights
-
-  protected search(filter: FlightFilter): void {
-    this.store.setFilter(filter);
-    this.store.load(filter);
-  }
+  protected store = inject(BookingStore);
 
   protected delay(flight: Flight): void {
     const oldFlight = flight;
@@ -46,12 +33,8 @@ export class FlightSearchComponent {
       delayed: true
     };
 
-    this.store.setFlights(this.flights().map(
+    this.store.setFlights(this.store.flights().map(
       flight => flight.id === newFlight.id ? newFlight : flight
     ));
-  }
-
-  protected reset(): void {
-    this.store.setFlights([]);
   }
 }
