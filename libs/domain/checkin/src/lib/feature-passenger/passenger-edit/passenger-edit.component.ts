@@ -1,15 +1,38 @@
 import { httpResource } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, input, linkedSignal, numberAttribute } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { form, FormField, required, schema } from '@angular/forms/signals';
+import { form, FormField, required, schema, SchemaPath, validate } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { initialPassenger, Passenger } from '../../logic-passenger/model/passenger';
+
+
+export function validateLastname(
+  field: SchemaPath<string>,
+  allowedLastnames: string[],
+  message: string
+): void {
+  validate(field, ({ value }) => allowedLastnames.includes(value())
+    ? null
+    : {
+      kind: 'forbiddenLastname',
+      message: message + ' Enter one of those Lastnames: '
+        + allowedLastnames.join(', ') 
+    }
+  );
+}
 
 // (3) Field Logic: Validators, conditional disabled, hidden, readonly
 export const passengerSchema = schema<Passenger>(passengerPath => {
   required(passengerPath.name, {
     message: 'The Lastname is mandatory - please enter one.'
   });
+  validateLastname(passengerPath.name, [
+    'Moore',
+    'Jackson',
+    'Martin'
+    ],
+    'The Lastname is not allowed.'
+  );
 });
 
 @Component({
