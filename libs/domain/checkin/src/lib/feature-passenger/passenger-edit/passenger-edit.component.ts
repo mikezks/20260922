@@ -1,7 +1,7 @@
 import { httpResource } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, input, linkedSignal, numberAttribute } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { form, FormField, required, schema, SchemaPath, validate } from '@angular/forms/signals';
+import { form, FormField, FormRoot, required, schema, SchemaPath, validate } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { initialPassenger, Passenger } from '../../logic-passenger/model/passenger';
 
@@ -43,7 +43,7 @@ export const passengerSchema = schema<Passenger>(passengerPath => {
     ReactiveFormsModule,
     RouterLink,
     // (4) UI Control: Template Binding
-    FormField
+    FormRoot, FormField
   ],
   templateUrl: './passenger-edit.component.html'
 })
@@ -61,7 +61,12 @@ export class PassengerEditComponent {
   // (2): Field State: valid, touched, dirty, value, ...
   protected readonly editForm = form(
     this.passengerState,
-    passengerSchema
+    passengerSchema,
+    {
+      submission: {
+        action: async () => this.save()
+      }
+    }
   );
   
   protected save(): void {
