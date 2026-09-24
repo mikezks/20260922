@@ -1,36 +1,41 @@
 import { httpResource } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, input, linkedSignal, numberAttribute } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, linkedSignal, numberAttribute } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { form, FormField, FormRoot, required, schema, SchemaPath, validate } from '@angular/forms/signals';
+import { createMetadataKey, form, FormField, FormRoot, metadata, required, schema, SchemaPath, validate } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { initialPassenger, Passenger } from '../../logic-passenger/model/passenger';
 
 
+const ALLOWED_LASTNAMES = createMetadataKey<string[]>();
+
 export function validateLastname(
   field: SchemaPath<string>,
-  allowedLastnames: string[],
   message: string
 ): void {
-  validate(field, ({ value }) => allowedLastnames.includes(value())
-    ? null
-    : {
-      kind: 'forbiddenLastname',
-      message: message + ' Enter one of those Lastnames: '
-        + allowedLastnames.join(', ') 
-    }
-  );
+  validate(field, ({ value, fieldTree }) => {
+    const allowedLastnames = fieldTree().metadata(ALLOWED_LASTNAMES)?.() || [];
+
+    return allowedLastnames.includes(value())
+      ? null
+      : {
+        kind: 'forbiddenLastname',
+        message: message + ' Enter one of those Lastnames: '
+          + allowedLastnames.join(', ') 
+      };
+  });
 }
 
 // (3) Field Logic: Validators, conditional disabled, hidden, readonly
 export const passengerSchema = schema<Passenger>(passengerPath => {
-  required(passengerPath.name, {
-    message: 'The Lastname is mandatory - please enter one.'
-  });
-  validateLastname(passengerPath.name, [
+  metadata(passengerPath.name, ALLOWED_LASTNAMES, () => [
     'Moore',
     'Jackson',
     'Martin'
-    ],
+  ]);
+  required(passengerPath.name, {
+    message: 'The Lastname is mandatory - please enter one.'
+  });
+  validateLastname(passengerPath.name,
     'The Lastname is not allowed.'
   );
 });
@@ -67,6 +72,10 @@ export class PassengerEditComponent {
         action: async () => this.save()
       }
     }
+  );
+
+  protected readonly allowedLastnames = computed(
+    () => this.editForm.name().metadata(ALLOWED_LASTNAMES)?.()?.join(', ') || ''
   );
   
   protected save(): void {
