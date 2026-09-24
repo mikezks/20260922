@@ -6,6 +6,7 @@ import { FlightService } from '../../logic-flight/data-access/flight.service';
 import { FlightFilter } from '../../logic-flight/model/flight-filter';
 import { FlightCardComponent } from '../../ui-flight/flight-card/flight-card.component';
 import { FlightFilterComponent } from '../../ui-flight/flight-filter/flight-filter.component';
+import { BookingStore } from '../../logic-flight/state/booking.store';
 
 
 @Component({
@@ -22,34 +23,16 @@ import { FlightFilterComponent } from '../../ui-flight/flight-filter/flight-filt
 })
 export class FlightSearchComponent {
   private flightService = inject(FlightService);
+  private store = inject(BookingStore);
   private changeDetector = inject(ChangeDetectorRef);
 
-  protected filter = {
-    from: 'Paris',
-    to: 'New York',
-    urgent: false
-  };
-  protected basket: Record<number, boolean> = {
-    3: true,
-    5: true
-  };
-  protected flights: Flight[] = [];
+  protected filter = this.store.filter;
+  protected basket = this.store.basket;
+  protected flights = this.store.flights
 
   protected search(filter: FlightFilter): void {
-    this.filter = filter;
-
-    if (!this.filter.from || !this.filter.to) {
-      return;
-    }
-
-    this.flightService.find(
-      this.filter.from, this.filter.to, this.filter.urgent
-    ).subscribe(
-      flights => {
-        this.flights = flights;
-        this.changeDetector.markForCheck();
-      }
-    );
+    this.store.setFilter(filter);
+    this.store.load(filter);
   }
 
   protected delay(flight: Flight): void {
@@ -63,12 +46,12 @@ export class FlightSearchComponent {
       delayed: true
     };
 
-    this.flights = this.flights.map(
+    this.store.setFlights(this.flights().map(
       flight => flight.id === newFlight.id ? newFlight : flight
-    );
+    ));
   }
 
   protected reset(): void {
-    this.flights = [];
+    this.store.setFlights([]);
   }
 }
