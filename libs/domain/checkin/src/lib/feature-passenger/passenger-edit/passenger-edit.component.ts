@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, effect, input, numberAttribute, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, input, linkedSignal, numberAttribute, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { form, FormField } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
@@ -18,23 +18,20 @@ import { initialPassenger, Passenger } from '../../logic-passenger/model/passeng
   templateUrl: './passenger-edit.component.html'
 })
 export class PassengerEditComponent {
-  private readonly passenger = signal({
-    ...initialPassenger,
-    firstName: 'Sarah'
-  });
-  protected readonly editForm = form(this.passenger);
-
   readonly id = input(0, { transform: numberAttribute });
   protected readonly passengerResource = httpResource<Passenger>(() => ({
     url: 'https://demo.angulararchitects.io/api/passenger',
     params: { id: this.id() }
-  }), {
-    defaultValue: initialPassenger
-  });
+  }), { defaultValue: initialPassenger });
+  private passengerState = linkedSignal(() => this.passengerResource.hasValue()
+    ? this.passengerResource.value()
+    : initialPassenger
+  , { set: passenger => this.passengerResource.set(passenger) });
+  protected readonly editForm = form(this.passengerState);
+
   
   protected save(): void {
-    this.passengerResource.set(this.editForm().value());
-    console.log(this.passenger());
     console.log(this.editForm().value());
+    console.log(this.passengerResource.value());
   }
 }
